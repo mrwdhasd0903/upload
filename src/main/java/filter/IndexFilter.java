@@ -6,6 +6,9 @@ import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 @WebFilter(filterName = "CorsFilter ")
 public class IndexFilter implements Filter {
@@ -19,11 +22,27 @@ public class IndexFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse rep = (HttpServletResponse) response;
-        rep.setHeader("Access-Control-Allow-Origin", "*");
-        rep.setHeader("Access-Control-Allow-Credentials", "true");
-        rep.setHeader("Access-Control-Allow-Methods", "POST, GET, PATCH, DELETE, PUT");
-        rep.setHeader("Access-Control-Max-Age", "3600");
-        rep.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, token");
+
+        // 设置允许访问当前服务的 多个域名
+        String[] allowDomains = {
+                "http://localhost:5500",
+                "http://127.0.0.1:5500",
+                "http://localhost:8080",
+                "http://127.0.0.1:8080",
+                "http://localhost:8081",
+                "http://127.0.0.1:8081",
+        };
+
+        Set allowOrigins = new HashSet(Arrays.asList(allowDomains));
+        //获取发起当前请求的域名
+        String originHeads = req.getHeader("Origin");
+        if (allowOrigins.contains(originHeads)) {
+            rep.setHeader("Access-Control-Allow-Origin", originHeads);
+            rep.setHeader("Access-Control-Allow-Credentials", "true");
+            rep.setHeader("Access-Control-Allow-Methods", "POST, GET, PATCH, DELETE, PUT");
+            rep.setHeader("Access-Control-Max-Age", "3600");
+            rep.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, token");
+        }
         chain.doFilter(req, rep);
     }
 
